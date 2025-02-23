@@ -16,7 +16,7 @@ def run_traceroute(domain):
 
 @app.route("/traceroute", methods=["GET"])
 def traceroute():
-    domain = request.args.get("site")
+    domain = request.args.get("domain")
     if not domain:
         return jsonify({"error": "Missing domain"}), 400
 
