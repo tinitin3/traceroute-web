@@ -7,7 +7,7 @@ import os
 
 
 app = Flask(__name__)
-CORS(app) 
+CORS(app)
 
 def run_traceroute(domain):
     result = subprocess.run(["traceroute", "-n", domain], capture_output=True, text=True)
@@ -17,6 +17,7 @@ def run_traceroute(domain):
 @app.route("/traceroute", methods=["GET"])
 def traceroute():
     domain = request.args.get("domain")
+    print(f"Domain received: '{domain}'")  # Log ajouté pour vérifier le paramètre reçu
     if not domain:
         return jsonify({"error": "Missing domain"}), 400
 
