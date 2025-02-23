@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Traceroute Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        #map { height: 500px; }
+    </style>
+</head>
+<body>
+    <h1>Traceroute Map</h1>
+    <input type="text" id="domain" placeholder="Entrez un site web (ex: discord.com)">
+    <button onclick="startTraceroute()">Tracer</button>
+    <div id="map"></div>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        var map = L.map('map').setView([20, 0], 2);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        function startTraceroute() {
+            let domain = document.getElementById('domain').value;
+            if (!domain) return alert("Veuillez entrer un site web.");
+            
+            fetch(`http://127.0.0.1:5000/traceroute?domain=${domain}`)
+                .then(response => response.json())
+                .then(data => updateMap(data))
+                .catch(error => console.error('Erreur lors du traceroute:', error));
+        }
+
+        function updateMap(data) {
+            let markers = [];
+            
+            map.eachLayer(layer => { 
+                if (layer instanceof L.Marker || layer instanceof L.Polyline) map.removeLayer(layer); 
+            });
+            
+            let coordinates = data.map(entry => {
+                let coord = [entry.lat, entry.lon];
+                markers.push(L.marker(coord).bindPopup(`${entry.city}, ${entry.country}`));
+                return coord;
+            });
+            
+            if (coordinates.length > 1) L.polyline(coordinates, { color: 'red' }).addTo(map);
+            markers.forEach(marker => marker.addTo(map));
+            
+            if (coordinates.length > 0) map.setView(coordinates[0], 3);
+        }
+    </script>
+</body>
+</html>
